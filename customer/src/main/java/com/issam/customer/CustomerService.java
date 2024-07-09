@@ -2,6 +2,8 @@ package com.issam.customer;
 
 import com.issam.clients.fraud.FraudCheckResponse;
 import com.issam.clients.fraud.FraudClient;
+import com.issam.clients.notification.NotificationClient;
+import com.issam.clients.notification.NotificationRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -11,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final RestTemplate restTemplate;
+    private final NotificationClient notificationClient;
     private final FraudClient fraudClient;
     public void registerCustomer(CustomerRegistrationRequest request) {
         Customer customer = Customer.builder()
@@ -30,6 +32,7 @@ public class CustomerService {
         if(fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("fraudster");
         }
-        // todo: send notification
+        // todo: make it async use message queue
+        notificationClient.sendNotification(new NotificationRequest(customer.getId(), customer.getEmail(), String.format("Hi %s, Welcome to Amigoscode", customer.getFirstName())));
     }
 }
